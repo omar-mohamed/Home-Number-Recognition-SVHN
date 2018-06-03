@@ -374,7 +374,7 @@ with graph.as_default():
     one_prediction_c1, one_prediction_c2, one_prediction_c3, one_prediction_c4, one_prediction_c5, one_prediction_c6 = stack_predictions(
         model(tf_one_input))
 
-num_steps = 1
+num_steps = 200001
 
 training_loss = []
 training_loss_epoch = []
@@ -427,33 +427,33 @@ with tf.Session(graph=graph, config=tf.ConfigProto(log_device_placement=True)) a
             valid_accuracy.append(validation_accuracy)
             valid_accuracy_epoch.append(step)
 
-            test_pred_c1 = np.zeros((test_size, num_digits_labels))
-            test_pred_c2 = np.zeros((test_size, digits_labels))
-            test_pred_c3 = np.zeros((test_size, digits_labels))
-            test_pred_c4 = np.zeros((test_size, digits_labels))
-            test_pred_c5 = np.zeros((test_size, digits_labels))
-            test_pred_c6 = np.zeros((test_size, digits_labels))
+    test_pred_c1 = np.zeros((test_size, num_digits_labels))
+    test_pred_c2 = np.zeros((test_size, digits_labels))
+    test_pred_c3 = np.zeros((test_size, digits_labels))
+    test_pred_c4 = np.zeros((test_size, digits_labels))
+    test_pred_c5 = np.zeros((test_size, digits_labels))
+    test_pred_c6 = np.zeros((test_size, digits_labels))
 
-            for step in range(int(test_size / test_batch_size)):
-                offset = (step * test_batch_size) % (test_size - test_batch_size)
-                batch_data = test_data[offset:(offset + test_batch_size), :, :, :]
-                feed_dict = {tf_test_dataset: batch_data}
-                c1, c2, c3, c4, c5, c6 = session.run(
-                    [test_prediction_c1, test_prediction_c2, test_prediction_c3, test_prediction_c4, test_prediction_c5,
-                     test_prediction_c6], feed_dict=feed_dict)
+    for step in range(int(test_size / test_batch_size)):
+        offset = (step * test_batch_size) % (test_size - test_batch_size)
+        batch_data = test_data[offset:(offset + test_batch_size), :, :, :]
+        feed_dict = {tf_test_dataset: batch_data}
+        c1, c2, c3, c4, c5, c6 = session.run(
+            [test_prediction_c1, test_prediction_c2, test_prediction_c3, test_prediction_c4, test_prediction_c5,
+             test_prediction_c6], feed_dict=feed_dict)
 
-                test_pred_c1[offset:offset + test_batch_size] = c1
-                test_pred_c2[offset:offset + test_batch_size] = c2
-                test_pred_c3[offset:offset + test_batch_size] = c3
-                test_pred_c4[offset:offset + test_batch_size] = c4
-                test_pred_c5[offset:offset + test_batch_size] = c5
-                test_pred_c6[offset:offset + test_batch_size] = c6
-            predictions = [test_pred_c1, test_pred_c2, test_pred_c3, test_pred_c4, test_pred_c5, test_pred_c6]
-            acc, test_predictions = accuracy(predictions, testOneHotLabels)
-            print('Test accuracy: %.1f%%' % acc)
-            writer.close()
-            saver = tf.train.Saver()
-            saver.save(session, "./saved_model/model.ckpt")
+        test_pred_c1[offset:offset + test_batch_size] = c1
+        test_pred_c2[offset:offset + test_batch_size] = c2
+        test_pred_c3[offset:offset + test_batch_size] = c3
+        test_pred_c4[offset:offset + test_batch_size] = c4
+        test_pred_c5[offset:offset + test_batch_size] = c5
+        test_pred_c6[offset:offset + test_batch_size] = c6
+    predictions = [test_pred_c1, test_pred_c2, test_pred_c3, test_pred_c4, test_pred_c5, test_pred_c6]
+    acc, test_predictions = accuracy(predictions, testOneHotLabels)
+    print('Test accuracy: %.1f%%' % acc)
+    writer.close()
+    saver = tf.train.Saver()
+    saver.save(session, "./saved_model/model.ckpt")
 
 
             #############################################################

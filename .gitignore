@@ -1,0 +1,5 @@
+test/
+train/
+.idea/
+*.pickle
+*Labels

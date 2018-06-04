@@ -1,6 +1,0 @@
-test/
-train/
-.idea/
-*.pickle
-testLabels
-trainLabels

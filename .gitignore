@@ -2,4 +2,5 @@ test/
 train/
 .idea/
 *.pickle
-*Labels
+testLabels
+trainLabels

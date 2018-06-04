@@ -1,0 +1,2 @@
+test accuracy: 82.6%
+32x32 input

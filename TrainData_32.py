@@ -155,12 +155,6 @@ with graph.as_default():
     # Input data.
     tf_train_dataset = tf.placeholder(
         tf.float32, shape=(batch_size, image_size, image_size, num_channels))
-    # tf_train_labels = [tf.placeholder(tf.float32, shape=(batch_size, num_digits_labels)),
-    #                    tf.placeholder(tf.float32, shape=(batch_size, digits_labels)),
-    #                    tf.placeholder(tf.float32, shape=(batch_size, digits_labels)),
-    #                    tf.placeholder(tf.float32, shape=(batch_size, digits_labels)),
-    #                    tf.placeholder(tf.float32, shape=(batch_size, digits_labels)),
-    #                    tf.placeholder(tf.float32, shape=(batch_size, digits_labels))]
 
     tf_train_labels_c1 = tf.placeholder(tf.float32, shape=(batch_size, num_digits_labels))
     tf_train_labels_c2 = tf.placeholder(tf.float32, shape=(batch_size, digits_labels))
@@ -340,7 +334,7 @@ with graph.as_default():
     # decayed_learning_rate = learning_rate *decay_rate ^ (global_step / decay_steps)
 
     global_step = tf.Variable(0)
-    learning_rate = tf.train.exponential_decay(0.001, global_step, 5000, 0.90, staircase=True)
+    learning_rate = tf.train.exponential_decay(0.001, global_step, 10000, 0.90, staircase=True)
     # Optimizer.
     optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate)
     tvars = tf.trainable_variables()
@@ -475,9 +469,9 @@ def plot_x_y(x, y, figure_name, x_axis_name, y_axis_name):
 
 plot_x_y(training_loss_epoch, training_loss, 'training_loss.png', 'epoch', 'training batch loss')
 
-plot_x_y(valid_accuracy_epoch, valid_accuracy, 'training_acc.png', 'epoch', 'training batch accuracy')
-
 plot_x_y(valid_accuracy_epoch, valid_accuracy, 'valid_acc.png', 'epoch', 'validation accuracy')
+
+plot_x_y(train_accuracy_epoch, train_accuracy, 'training_acc.png', 'epoch', 'training batch accuracy')
 
 
 def disp_prediction_samples(predictions, dataset, num_images):

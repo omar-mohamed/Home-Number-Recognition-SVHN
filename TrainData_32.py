@@ -290,7 +290,6 @@ with graph.as_default():
 
     # Model.
     def model(data, keep_dropout_rate=1):
-
         # first conv block
         hidden = run_conv_layer(data, conv1_weights, conv1_biases)
         # second conv block
@@ -329,7 +328,7 @@ with graph.as_default():
 
 
     # Training computation.
-    logits = model(tf_train_dataset, 0.90)
+    logits = model(tf_train_dataset, 0.7)
 
     # regularizers=regularization_lambda*(tf.nn.l2_loss(hidden1_weights) + tf.nn.l2_loss(hidden1_biases))+regularization_lambda*(tf.nn.l2_loss(hidden2_weights) + tf.nn.l2_loss(hidden2_biases))+regularization_lambda*(tf.nn.l2_loss(hidden3_weights) + tf.nn.l2_loss(hidden3_biases))
     loss = 0.0
@@ -341,7 +340,7 @@ with graph.as_default():
     # decayed_learning_rate = learning_rate *decay_rate ^ (global_step / decay_steps)
 
     global_step = tf.Variable(0)
-    learning_rate = tf.train.exponential_decay(0.001, global_step, 1000, 0.90, staircase=True)
+    learning_rate = tf.train.exponential_decay(0.001, global_step, 5000, 0.90, staircase=True)
     # Optimizer.
     optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate)
     tvars = tf.trainable_variables()
@@ -374,7 +373,7 @@ with graph.as_default():
     one_prediction_c1, one_prediction_c2, one_prediction_c3, one_prediction_c4, one_prediction_c5, one_prediction_c6 = stack_predictions(
         model(tf_one_input))
 
-num_steps = 501
+num_steps = 200001
 
 training_loss = []
 training_loss_epoch = []
@@ -391,6 +390,7 @@ test_accuracy=0
 
 with tf.Session(graph=graph, config=tf.ConfigProto(log_device_placement=True)) as session:
     tf.global_variables_initializer().run()
+    saver = tf.train.Saver()
     # `sess.graph` provides access to the graph used in a `tf.Session`.
     writer = tf.summary.FileWriter('./graph_info', session.graph)
 
@@ -455,7 +455,6 @@ with tf.Session(graph=graph, config=tf.ConfigProto(log_device_placement=True)) a
     predictions = [test_pred_c1, test_pred_c2, test_pred_c3, test_pred_c4, test_pred_c5, test_pred_c6]
     test_accuracy, test_predictions = accuracy(predictions, testOneHotLabels)
     writer.close()
-    saver = tf.train.Saver()
     saver.save(session, "./saved_model/model.ckpt")
 
 
@@ -467,6 +466,8 @@ def plot_x_y(x, y, figure_name, x_axis_name, y_axis_name):
     plt.plot(x, y)
     plt.xlabel(x_axis_name)
     plt.ylabel(y_axis_name)
+    axes = plt.gca()
+    axes.set_ylim([0, 100])
     # plt.legend([line_name],loc='upper left')
     plt.savefig('./output_images/' + figure_name)
     # plt.show()

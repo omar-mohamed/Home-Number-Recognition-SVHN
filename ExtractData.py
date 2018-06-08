@@ -19,6 +19,9 @@ def maybe_extract(filename, force=False):
 
 train_filename = os.path.join(data_root, 'train.tar.gz')
 test_filename = os.path.join(data_root, 'test.tar.gz')
+extra_filename = os.path.join(data_root, 'extra.tar.gz')
+
 
 maybe_extract(train_filename)
 maybe_extract(test_filename)
+maybe_extract(extra_filename)

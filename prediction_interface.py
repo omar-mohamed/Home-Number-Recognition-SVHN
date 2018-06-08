@@ -94,13 +94,13 @@ class Window(Frame):
             # new_saver = tf.train.import_meta_graph('./best_model/saved_model/model.ckpt.meta')
             self.model_saver.restore(sess, tf.train.latest_checkpoint('./best_model/saved_model/'))
             graph = sess.graph
-            one_input = graph.get_tensor_by_name("Placeholder_8:0")
-            softmax1 = graph.get_tensor_by_name("Softmax_18:0")
-            softmax2 = graph.get_tensor_by_name("Softmax_19:0")
-            softmax3 = graph.get_tensor_by_name("Softmax_20:0")
-            softmax4 = graph.get_tensor_by_name("Softmax_21:0")
-            softmax5 = graph.get_tensor_by_name("Softmax_22:0")
-            softmax6 = graph.get_tensor_by_name("Softmax_23:0")
+            one_input = graph.get_tensor_by_name("one_input_placeholder:0")
+            softmax1 = graph.get_tensor_by_name("one_prediction_c1:0")
+            softmax2 = graph.get_tensor_by_name("one_prediction_c2:0")
+            softmax3 = graph.get_tensor_by_name("one_prediction_c3:0")
+            softmax4 = graph.get_tensor_by_name("one_prediction_c4:0")
+            softmax5 = graph.get_tensor_by_name("one_prediction_c5:0")
+            softmax6 = graph.get_tensor_by_name("one_prediction_c6:0")
 
             # print([node.name for node in graph.as_graph_def().node])
 

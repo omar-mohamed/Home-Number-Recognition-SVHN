@@ -137,7 +137,7 @@ digits_labels = 10
 batch_size = 64
 test_batch_size = 457
 patch_size = 5
-depth1 = 16
+depth1 = 24
 depth2 = 32
 depth3 = 64
 num_hidden1 = 1024
@@ -171,7 +171,7 @@ with graph.as_default():
                        tf_train_labels_c6]
 
     tf_test_dataset = tf.placeholder(tf.float32, shape=(test_batch_size, image_size, image_size, num_channels))
-    tf_one_input = tf.placeholder(tf.float32, shape=(1, image_size, image_size, num_channels))
+    tf_one_input = tf.placeholder(tf.float32, shape=(1, image_size, image_size, num_channels),name='one_input_placeholder')
     tf_validation_dataset = tf.constant(valid_data)
 
 
@@ -322,7 +322,7 @@ with graph.as_default():
 
 
     # Training computation.
-    logits = model(tf_train_dataset, 0.7)
+    logits = model(tf_train_dataset, 0.9)
 
     # regularizers=regularization_lambda*(tf.nn.l2_loss(hidden1_weights) + tf.nn.l2_loss(hidden1_biases))+regularization_lambda*(tf.nn.l2_loss(hidden2_weights) + tf.nn.l2_loss(hidden2_biases))+regularization_lambda*(tf.nn.l2_loss(hidden3_weights) + tf.nn.l2_loss(hidden3_biases))
     loss = 0.0
@@ -334,7 +334,7 @@ with graph.as_default():
     # decayed_learning_rate = learning_rate *decay_rate ^ (global_step / decay_steps)
 
     global_step = tf.Variable(0)
-    learning_rate = tf.train.exponential_decay(0.001, global_step, 10000, 0.90, staircase=True)
+    learning_rate = tf.train.exponential_decay(0.001, global_step, 20000, 0.90, staircase=True)
     # Optimizer.
     optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate)
     tvars = tf.trainable_variables()
@@ -366,8 +366,9 @@ with graph.as_default():
         model(tf_test_dataset))
     one_prediction_c1, one_prediction_c2, one_prediction_c3, one_prediction_c4, one_prediction_c5, one_prediction_c6 = stack_predictions(
         model(tf_one_input))
+    one_prediction_c1, one_prediction_c2, one_prediction_c3, one_prediction_c4, one_prediction_c5, one_prediction_c6 = tf.identity(one_prediction_c1, name="one_prediction_c1"),tf.identity(one_prediction_c2, name="one_prediction_c2"),tf.identity(one_prediction_c3, name="one_prediction_c3"),tf.identity(one_prediction_c4, name="one_prediction_c4"),tf.identity(one_prediction_c5, name="one_prediction_c5"),tf.identity(one_prediction_c6, name="one_prediction_c6")
 
-num_steps = 200001
+num_steps = 500001
 
 training_loss = []
 training_loss_epoch = []
@@ -455,19 +456,19 @@ with tf.Session(graph=graph, config=tf.ConfigProto(log_device_placement=True)) a
             #############################################################
 
 
-def plot_x_y(x, y, figure_name, x_axis_name, y_axis_name):
+def plot_x_y(x, y, figure_name, x_axis_name, y_axis_name,ylim=[0,100]):
     plt.figure()
     plt.plot(x, y)
     plt.xlabel(x_axis_name)
     plt.ylabel(y_axis_name)
     axes = plt.gca()
-    axes.set_ylim([0, 100])
+    axes.set_ylim(ylim)
     # plt.legend([line_name],loc='upper left')
     plt.savefig('./output_images/' + figure_name)
     # plt.show()
 
 
-plot_x_y(training_loss_epoch, training_loss, 'training_loss.png', 'epoch', 'training batch loss')
+plot_x_y(training_loss_epoch, training_loss, 'training_loss.png', 'epoch', 'training batch loss',[0,50])
 
 plot_x_y(valid_accuracy_epoch, valid_accuracy, 'valid_acc.png', 'epoch', 'validation accuracy')
 

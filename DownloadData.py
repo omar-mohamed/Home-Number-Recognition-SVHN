@@ -46,3 +46,4 @@ def maybe_download(filename, expected_bytes, force=False):
 
 train_filename = maybe_download('train.tar.gz', 404141560)
 test_filename = maybe_download('test.tar.gz', 276555967)
+extra_filename = maybe_download('extra.tar.gz', 1955489752)

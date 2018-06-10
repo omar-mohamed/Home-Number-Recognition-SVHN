@@ -28,6 +28,7 @@ del all_data
 
 
 
+#get one hot representation of the labels
 def getOneHot(Datasetlabels):
     dataSize = Datasetlabels.shape[0]
     onehotLabels1 = np.zeros((dataSize, 7))
@@ -66,7 +67,7 @@ validOneHotLabels = getOneHot(valid_labels)
 ################################################
 
 
-#################Load train and test data###################
+#################Format train and test data###################
 
 
 num_channels = 1  # grayscale
@@ -98,9 +99,10 @@ train_size = train_data.shape[0]
 
 ########################Training###########################
 
-num_classifiers = 6
+num_classifiers = 6 # number of digits and a classifier for every one of the 5 digits
 
 
+# a method that takes the predictions one hot representations and return it as a string
 def get_onehot_as_string(labels):
     all_labels = []
     batch_size = labels[0].shape[0]
@@ -115,6 +117,7 @@ def get_onehot_as_string(labels):
     return all_labels
 
 
+# a method to calculate accuracy between predictions and labels
 def accuracy(predictions, labels):
     batch_size = predictions[0].shape[0]
     predictions = get_onehot_as_string(predictions)
@@ -132,17 +135,17 @@ def accuracy(predictions, labels):
 
 
 
-num_digits_labels = 7
-digits_labels = 10
-batch_size = 64
-test_batch_size = 457
-patch_size = 5
-depth1 = 24
-depth2 = 32
-depth3 = 64
-num_hidden1 = 1024
-num_hidden2 = 512
-num_hidden3 = 256
+num_digits_labels = 7   # the labels' length of the first classifier which is the number of digits
+digits_labels = 10      # the labels' length for a digit classifier
+batch_size = 64         # the number of training images in a single iteration
+test_batch_size = 457   # used to calculate test predictions over many iterations to avoid memory issues
+patch_size = 5          # conolution filter size
+depth1 = 16             # number of filters in first conv layer
+depth2 = 32             # number of filters in second conv layer
+depth3 = 64             # number of filters in third conv layer
+num_hidden1 = 1024      # the size of the unrolled vector after convolution
+num_hidden2 = 512       # the size of the hidden neurons in fully connected layer
+num_hidden3 = 256       # the size of the hidden neurons in fully connected layer
 # regularization_lambda=4e-4
 
 
@@ -156,6 +159,7 @@ with graph.as_default():
     tf_train_dataset = tf.placeholder(
         tf.float32, shape=(batch_size, image_size, image_size, num_channels))
 
+    #labels for every classifier
     tf_train_labels_c1 = tf.placeholder(tf.float32, shape=(batch_size, num_digits_labels))
     tf_train_labels_c2 = tf.placeholder(tf.float32, shape=(batch_size, digits_labels))
     tf_train_labels_c3 = tf.placeholder(tf.float32, shape=(batch_size, digits_labels))
@@ -171,8 +175,11 @@ with graph.as_default():
                        tf_train_labels_c6]
 
     tf_test_dataset = tf.placeholder(tf.float32, shape=(test_batch_size, image_size, image_size, num_channels))
-    tf_one_input = tf.placeholder(tf.float32, shape=(1, image_size, image_size, num_channels),name='one_input_placeholder')
     tf_validation_dataset = tf.constant(valid_data)
+
+    #to take one image and classify it (used in gui interface)
+    tf_one_input = tf.placeholder(tf.float32, shape=(1, image_size, image_size, num_channels),name='one_input_placeholder')
+
 
 
     def get_conv_weight(name, shape):
@@ -191,7 +198,6 @@ with graph.as_default():
 
 
     # Variables.
-
 
     conv1_weights = get_conv_weight('conv1_weights', [patch_size, patch_size, num_channels, depth1])
     conv1_biases = get_bias_variable([depth1])
@@ -291,6 +297,7 @@ with graph.as_default():
         # third conv block
         hidden = run_conv_layer(hidden, conv3_weights, conv3_biases)
 
+        #flatten
         shape = hidden.get_shape().as_list()
         reshape = tf.reshape(hidden, [shape[0], shape[1] * shape[2] * shape[3]])
 
@@ -322,9 +329,11 @@ with graph.as_default():
 
 
     # Training computation.
-    logits = model(tf_train_dataset, 0.9)
+    logits = model(tf_train_dataset, 0.7)
 
     # regularizers=regularization_lambda*(tf.nn.l2_loss(hidden1_weights) + tf.nn.l2_loss(hidden1_biases))+regularization_lambda*(tf.nn.l2_loss(hidden2_weights) + tf.nn.l2_loss(hidden2_biases))+regularization_lambda*(tf.nn.l2_loss(hidden3_weights) + tf.nn.l2_loss(hidden3_biases))
+
+   #sum loss of different classifiers
     loss = 0.0
     for i in range(num_classifiers):
         loss = loss + tf.reduce_mean(
@@ -334,12 +343,12 @@ with graph.as_default():
     # decayed_learning_rate = learning_rate *decay_rate ^ (global_step / decay_steps)
 
     global_step = tf.Variable(0)
-    learning_rate = tf.train.exponential_decay(0.001, global_step, 20000, 0.90, staircase=True)
+    learning_rate = tf.train.exponential_decay(0.001, global_step, 20000, 0.90, staircase=True)  #use learning rate decay
     # Optimizer.
     optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate)
     tvars = tf.trainable_variables()
     grads, _ = tf.clip_by_global_norm(tf.gradients(loss, tvars),
-                                      1.0)
+                                      1.0)          #gradient clipping by 1
     optimize = optimizer.apply_gradients(
         zip(grads, tvars),
         global_step=global_step)
@@ -368,8 +377,13 @@ with graph.as_default():
         model(tf_one_input))
     one_prediction_c1, one_prediction_c2, one_prediction_c3, one_prediction_c4, one_prediction_c5, one_prediction_c6 = tf.identity(one_prediction_c1, name="one_prediction_c1"),tf.identity(one_prediction_c2, name="one_prediction_c2"),tf.identity(one_prediction_c3, name="one_prediction_c3"),tf.identity(one_prediction_c4, name="one_prediction_c4"),tf.identity(one_prediction_c5, name="one_prediction_c5"),tf.identity(one_prediction_c6, name="one_prediction_c6")
 
-num_steps = 500001
 
+
+
+num_steps = 200001   #number of training iterations
+
+
+#used for drawing error and accuracy over time
 training_loss = []
 training_loss_epoch = []
 
@@ -413,10 +427,10 @@ with tf.Session(graph=graph, config=tf.ConfigProto(log_device_placement=True)) a
             training_loss_epoch.append(step)
             train_accuracy.append(batch_train_accuracy)
             train_accuracy_epoch.append(step)
-            if(lr==0):
+            if(lr==0):   #if learning rate reaches 0 break
                 break
 
-        if (step % 500 == 0):
+        if (step % 500 == 0):   #every 500 iteration calculate validation accuracy
             c1, c2, c3, c4, c5, c6 = session.run(
                 [valid_prediction_c1, valid_prediction_c2, valid_prediction_c3, valid_prediction_c4,
                  valid_prediction_c5, valid_prediction_c6])
@@ -425,6 +439,8 @@ with tf.Session(graph=graph, config=tf.ConfigProto(log_device_placement=True)) a
             print('validation accuracy: %.1f%%' % validation_accuracy)
             valid_accuracy.append(validation_accuracy)
             valid_accuracy_epoch.append(step)
+
+    #get test predictions in steps to avoid memory problems
 
     test_pred_c1 = np.zeros((test_size, num_digits_labels))
     test_pred_c2 = np.zeros((test_size, digits_labels))
@@ -447,13 +463,14 @@ with tf.Session(graph=graph, config=tf.ConfigProto(log_device_placement=True)) a
         test_pred_c4[offset:offset + test_batch_size] = c4
         test_pred_c5[offset:offset + test_batch_size] = c5
         test_pred_c6[offset:offset + test_batch_size] = c6
+    # calculate test accuracy and save the model
     predictions = [test_pred_c1, test_pred_c2, test_pred_c3, test_pred_c4, test_pred_c5, test_pred_c6]
     test_accuracy, test_predictions = accuracy(predictions, testOneHotLabels)
     writer.close()
     saver.save(session, "./saved_model/model.ckpt")
 
 
-            #############################################################
+            ###############################Plot Results and save images##############################
 
 
 def plot_x_y(x, y, figure_name, x_axis_name, y_axis_name,ylim=[0,100]):

@@ -8,6 +8,7 @@ Given an image, the task is to identify the number in the image. The number to b
 
 ![g1](https://user-images.githubusercontent.com/6074821/41202631-58d5afae-6ccc-11e8-96ec-c995d6cdcb7e.jpg)
 
+
 # Dataset:
 
 SVHN is a real-world image dataset for developing machine learning and object recognition algorithms with minimal requirement on data preprocessing and formatting. SVHN is obtained from house numbers in Google Street View images.
@@ -61,3 +62,7 @@ We made a GUI interface that takes a picture and classify it using our saved mod
 # References:
 
 - [Ian Goodfellow Paper, Multi-digit Number Recognition from Street View Imagery using Deep Convolutional Neural Networks](https://static.googleusercontent.com/media/research.google.com/en//pubs/archive/42241.pdf)
+
+# Environment Used:
+- Python 3.6.1
+- Tensorflow 1.3
